@@ -1,0 +1,75 @@
+module Token where
+
+import Payment
+
+{-
+hehehe comments
+-}
+
+-- behavior 
+-- data model
+-- right/obligations
+template Token
+    with
+        issuer: Party
+        owner: Party
+        description: Text
+        userAdmin: Party -- Trusted authority
+        issued: Time
+        lastPrice: Decimal
+        currency: Text
+        royaltyRate: Decimal
+    where
+        signatory issuer, userAdmin
+
+        controller owner can
+            Offer: ContractId TokenOffer
+                with
+                    newOwner: Party
+                    price: Decimal
+                do
+                    create TokenOffer with ..
+
+template TokenOffer
+    with
+        issuer: Party
+        owner: Party
+        description: Text
+        userAdmin: Party -- Trusted authority
+        issued: Time 
+        newOwner: Party
+        price: Decimal
+        lastPrice: Decimal
+        currency: Text
+        royaltyRate: Decimal
+    where
+        signatory issuer, userAdmin, owner
+
+        key (issuer, owner, description): (Party, Party, Text)
+        maintainer key._2
+
+        controller newOwner, userAdmin can
+            AcceptToken: (ContractId Token, ContractId Payable, ContractId Payable)
+                do
+                    fromNewOwnerToOwner <- create Payable
+                        with
+                           from = newOwner
+                           to = owner
+                           amount = price
+                           currency
+                           reference = "Notional for `" <> description <> "`."
+                    
+                    royaltyPayment <- create Payable
+                        with 
+                            from = newOwner
+                            to = owner
+                            amount = price * royaltyRate
+                            currency
+                            reference = "Royalty for `"<> description <>"`."
+
+                    newToken <- create Token
+                        with
+                            owner = newOwner
+                            lastPrice = price
+                            ..
+                    return (newToken, fromNewOwnerToOwner, royaltyPayment)

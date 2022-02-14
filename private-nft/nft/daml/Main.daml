@@ -1,38 +1,49 @@
 module Main where
-
+import Token
+import UserAdmin
 import Daml.Script
 
-type AssetId = ContractId Asset
-
-template Asset
-  with
-    issuer : Party
-    owner  : Party
-    name   : Text
-  where
-    ensure name /= ""
-    signatory issuer
-    observer owner
-    choice Give : AssetId
-      with
-        newOwner : Party
-      controller owner
-      do create this with
-           owner = newOwner
-
-setup : Script AssetId
+setup : Script ()
 setup = script do
   alice <- allocatePartyWithHint "Alice" (PartyIdHint "Alice")
   bob <- allocatePartyWithHint "Bob" (PartyIdHint "Bob")
+  userAdmin <- allocatePartyWithHint "UserAdmin" (PartyIdHint "UserAdmin")
 
-  aliceTV <- submit alice do
-    createCmd Asset with
-      issuer = alice
-      owner = alice
-      name = "TV"
+  now <- getTime
 
-  bobTV <- submit alice do
-    exerciseCmd aliceTV Give with newOwner = bob
+  alliceIssuer <- submit userAdmin do
+    createCmd Issuer
+      with
+        userAdmin = userAdmin
+        issuer = alice
+
+  originalToken <- submit alice do
+    exerciseCmd alliceIssuer MintToken
+      with
+        description = "Cat Pic 1"
+        initialPrice = 100.0
+        currency = "USD"
+        royaltyRate = 0.05
+  
+  bobOffer <- submit alice do 
+    exerciseCmd originalToken Offer
+      with
+        newOwner = bob
+        price = 200.0
 
   submit bob do
-    exerciseCmd bobTV Give with newOwner = alice
+    exerciseCmd bobOffer AcceptToken 
+
+  -- submit alice do
+  --   createCmd Token
+  --     with
+  --       issuer = alice
+  --       owner = bob
+  --       description = "Cat Pic 1"
+  --       userAdmin = userAdmin
+  --       issued = now
+  --       lastPrice = 100.0
+  --       currency = "USD"
+  --       royaltyRate = 0.05
+
+  return () 

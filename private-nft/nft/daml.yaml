@@ -8,6 +8,10 @@ init-script: Main:setup
 parties:
   - Alice
   - Bob
+  - Charlie
+  - UserAdmin
+  - Doug
+  - Ellen
 version: 0.0.1
 dependencies:
   - daml-prim

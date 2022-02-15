@@ -7,6 +7,7 @@ setup : Script ()
 setup = script do
   alice <- allocatePartyWithHint "Alice" (PartyIdHint "Alice")
   bob <- allocatePartyWithHint "Bob" (PartyIdHint "Bob")
+  charlie <- allocatePartyWithHint "Charlie" (PartyIdHint "Charlie")
   userAdmin <- allocatePartyWithHint "UserAdmin" (PartyIdHint "UserAdmin")
 
   now <- getTime
@@ -31,19 +32,46 @@ setup = script do
         newOwner = bob
         price = 200.0
 
-  submit bob do
-    exerciseCmd bobOffer AcceptToken 
+  bobRequest <- submit bob do
+    createCmd OwnerRequest
+      with
+        userAdmin = userAdmin
+        owner = bob
+        reason = "I have got connections"
 
-  -- submit alice do
-  --   createCmd Token
-  --     with
-  --       issuer = alice
-  --       owner = bob
-  --       description = "Cat Pic 1"
-  --       userAdmin = userAdmin
-  --       issued = now
-  --       lastPrice = 100.0
-  --       currency = "USD"
-  --       royaltyRate = 0.05
+  bobOwner <- submit userAdmin do
+    exerciseCmd bobRequest GrantOwnerRights
+
+  charlieRequest <- submit charlie do
+    createCmd OwnerRequest
+      with
+        userAdmin = userAdmin
+        owner = charlie
+        reason = "FOMO"
+
+  charlieOwner <- submit userAdmin do
+    exerciseCmd charlieRequest GrantOwnerRights
+
+  (bobToken, _, _) <- submit bob do
+    exerciseCmd bobOwner AcceptTokenAsNewOwner
+      with 
+        offerId = bobOffer
+  
+  charlieOffer <- submit bob do
+    exerciseCmd bobToken Offer
+      with
+        newOwner = charlie
+        price = 300.0
+
+  submit charlie do
+    exerciseCmd charlieOwner AcceptTokenAsNewOwner
+      with
+        offerId = charlieOffer
+
+
+
+
+  -- submit bob do
+  --   exerciseCmd bobOffer AcceptToken 
 
   return () 

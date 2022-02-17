@@ -9,5 +9,5 @@ _______________________________________________________________________________
 (Oleksandr Lytvyn, Synpulse Slovakia) to submit the outputs or materials
 
 
-#### After completing the certification your branch will be merged into `main`
+#### After completing the certification your branch will be merged into `main` (maybe LOL)
 _______________________________________________________________________________

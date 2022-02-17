@@ -11,3 +11,9 @@ _______________________________________________________________________________
 
 #### After completing the certification your branch will be merged into `main` (maybe LOL)
 _______________________________________________________________________________
+
+### Training Process
+
+0. DAML 101 video series - YouTube (https://youtube.com/playlist?list=PLjLGVUzUMRxUqUXUGltc85HkB7CxsIYR4)
+1. Introduction to Daml (FREE) (DAML001) - on https://daml.talentlms.com/
+2. Getting Started

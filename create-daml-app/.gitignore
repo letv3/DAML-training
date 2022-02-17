@@ -1,0 +1,12 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+/.daml
+/.daml.js
+build
+node_modules
+
+*.log
+
+ui/daml.js
+ui/node_modules
+
